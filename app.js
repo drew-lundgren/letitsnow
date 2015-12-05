@@ -20,7 +20,7 @@ $.get("http://www.nws.noaa.gov/view/prodsByState.php?state=MN&prodtype=public#LS
 
 function parse(raw) {
 //  console.log(raw.indexOf('\n'));
-  var re = /(\d{4}\s[A-Z]{2})/m;
+  var re = /(\d{4}\s[A-Z]{2}[\s\S]*?\w{6})/;
   var sections = raw.split("<pre>"),
       lines;
   //console.log(sections);
