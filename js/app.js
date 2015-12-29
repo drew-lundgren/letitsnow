@@ -3,31 +3,42 @@ window.onload = function() {
 };
 
 function main() {
-    _getData();
+    var data,
+        map =
+        // setup leaflet map
+        _setupMap();
+
+        // query weather service for latest weather data
+        _getData( function(result) {
+            // parse data and return records array
+            data = _parse(result);
+        }),
+
+
+        console.log(data, map);
 }
 
+function _setupMap() {
+    var map = L.map('map').setView([-41.2858, 174.7868], 13),
+        mapLink =
+            '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+    L.tileLayer(
+        'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; ' + mapLink + ' Contributors',
+            maxZoom: 18,
+        }).addTo(map);
+    return map;
+}
 
-// $.ajaxPrefilter(function(options) {
-//     if (options.crossDomain && jQuery.support.cors) {
-//         var http = (window.location.protocol === 'http:' ? 'http:' : 'https:');
-//         options.url = http + '//cors-anywhere.herokuapp.com/' + options.url;
-//         //options.url = "http://cors.corsproxy.io/url=" + options.url;
-//     }
-// });
-// $.get("http://www.nws.noaa.gov/view/prodsByState.php?state=MN&prodtype=public")
-//     .done(
-//         function(data) {
-//             parse(data);
-//         });
-function _getData() {
+// GET request to weather service
+function _getData(callback) {
     var request = new XMLHttpRequest();
     request.open('GET', 'http://cors-anywhere.herokuapp.com/nws.noaa.gov/view/prodsByState.php?state=MN&prodtype=public', true);
 
     request.onload = function() {
       if (request.status >= 200 && request.status < 400) {
         // Success!
-        var data = request.responseText;
-        _parse(data);
+        callback(request.responseText);
       } else {
         // We reached our target server, but it returned an error
         console.log('server error', request);
@@ -42,10 +53,7 @@ function _getData() {
     request.send();
 }
 
-
-
-
-
+// parse raw data into useable records
 function _parse(raw) {
     //  console.log(raw.indexOf('\n'));
     //var re = /(..REMARKS..[^]*?&&)/,
@@ -61,6 +69,7 @@ function _parse(raw) {
         data = {},
         lines = raw.split(regexs.lines),
         matches = [];
+
         lines.forEach( function(line, index, array) {
             var match = '';
             // check for time
@@ -77,7 +86,7 @@ function _parse(raw) {
         });
 
     // console.log(regexs);
-    console.log('matches', matches);
+    // console.log('matches', matches);
 
     // loop through rows
     matches.forEach( function(row) {
@@ -116,5 +125,10 @@ function _parse(raw) {
         records.push(data);
     });
 
-    console.log('records', records);
+    // console.log('records', records);
+    return records;
 }
+
+
+
+
