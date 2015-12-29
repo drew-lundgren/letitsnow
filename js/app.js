@@ -88,15 +88,27 @@ function _parse(raw) {
         // set the date
         var theDate = new Date(row.match(regexs.date)[0]),
             theTime = row.match(regexs.time)[0],
-            hours = theTime.substr(-2) == 'AM' ? theTime.substr(0,2) : theTime.substr(0,2) + 12;
+            hours12 = parseInt(theTime.substr(0,2)),
+            hours24 = theTime.substr(-2) == 'AM' ? hours12 : hours12 + 12,
+
+            // get lat long
+            dirLatLng = row.match(regexs.latLng)[0],
+            // convert from directional to hemispheric
+            leafLatLng = dirLatLng.split(' ').map( function(latLng) {
+                if (latLng.substr(-1) == 'N' || latLng.substr(-1) == 'E') {
+                    return latLng.slice(0,5) * 1;
+                } else {
+                    return latLng.slice(0,5) * -1;
+                }
+            });
         // set the time
-        theDate.setHours(hours);
+        theDate.setHours(hours24);
         theDate.setMinutes(theTime.substr(2,2));
 
         // populate data
         data = {
-            latLng: row.match(regexs.latLng)[0],
-            value: row.match(regexs.value)[0],
+            latLng: leafLatLng,
+            value: parseFloat(row.match(regexs.value)[0]),
             datetime: theDate
         };
 
