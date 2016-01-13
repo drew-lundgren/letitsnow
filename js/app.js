@@ -27,12 +27,6 @@ function main()
 // http://bost.ocks.org/mike/leaflet/
 function _addData2Map(map, weatherData)
 {
-    /* Initialize the SVG layer */
-    map._initPathRoot()
-    /* We simply pick up the SVG from the map object */
-    var svg = d3.select("#map").select("svg"),
-        g = svg.append("g");
-
     /* Add a LatLng object to each item in the dataset */
     weatherData.forEach( function(d)
     {
@@ -41,37 +35,68 @@ function _addData2Map(map, weatherData)
             d.coords[1]
         );
     });
+    /* Initialize the SVG layer */
+    map._initPathRoot();
+    /* We simply pick up the SVG from the map object */
+    var svg = d3.select("#map").select("svg"),
 
-    var feature = g.selectAll("circle")
-        .data(weatherData)
-        .enter().append("circle")
-        .style("stroke", "black")
-        .style("opacity", .6)
-        .style("fill", "red")
-        .attr("r", 20);
+        // add group container - holds circel and text
+        group = svg.selectAll("g")
+            .data(weatherData),
 
-    map.on("viewreset", update);
-    update();
+        // add to group
+        groupEnter = group.enter()
+            .append('g')
+            .attr("transform", _leaf2D3),
 
-    function update()
+        // add circles to group
+        circle = groupEnter.append('circle')
+            .style("stroke", "black")
+            // .style("opacity", .6)
+            .style("fill", "#ABC5FF")
+            .attr("r", 20),
+
+        // add text to group
+        text = groupEnter.append('text')
+            .attr('dx', -8)
+            .attr('dy', 5)
+            // label feature with snowfall amount
+            .text( function(d) {
+                return d.value;
+            });
+
+
+
+    // var feature = group.selectAll("circle")
+    //     .data(weatherData)
+    //     .enter().append("circle")
+
+    map.on("viewreset", _update);
+    _update();
+
+    function _update()
     {
-        feature.attr("transform",
-            function(d)
-            {
-                return "translate(" +
-                    map.latLngToLayerPoint(d.LatLng).x + "," +
-                    map.latLngToLayerPoint(d.LatLng).y + ")";
-            }
-        );
+        group.attr("transform", _leaf2D3);
     }
+
+    function _leaf2D3(d) {
+        {
+            return "translate(" +
+                map.latLngToLayerPoint(d.LatLng).x + "," +
+                map.latLngToLayerPoint(d.LatLng).y + ")";
+        }
+    }
+
     console.log('done');
+
+
 }
 
 // setup leaflet map
 // return map object
 function _setupMap()
 {
-    var map = L.map('map').setView([46.782963, -92.094666], 6),
+    var map = L.map('map').setView([46.782963, -92.094666], 7),
         MapQuestOpen_Aerial = L.tileLayer('http://otile{s}.mqcdn.com/tiles/1.0.0/{type}/{z}/{x}/{y}.{ext}',
         {
             type: 'sat',
