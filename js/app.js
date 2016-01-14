@@ -1,3 +1,14 @@
+// app.js
+
+
+// try this out for a progress bar
+// http://bl.ocks.org/mbostock/3750941
+// this might be easier:
+// http://www.competa.com/blog/2015/10/animated-progress-bars-with-d3-js/
+
+// js-hint modifiers
+/*globals d3, L */
+
 window.onload = function()
 {
     main();
@@ -40,6 +51,11 @@ function _addData2Map(map, weatherData)
     /* We simply pick up the SVG from the map object */
     var svg = d3.select("#map").select("svg"),
 
+        color = d3.scale.linear()
+            .domain(_getValueRange(weatherData))
+            .range(["#8A9599", "#F200FF"])
+            .interpolate(d3.interpolateHcl),
+
         // add group container - holds circel and text
         group = svg.selectAll("g")
             .data(weatherData),
@@ -53,7 +69,11 @@ function _addData2Map(map, weatherData)
         circle = groupEnter.append('circle')
             .style("stroke", "black")
             // .style("opacity", .6)
-            .style("fill", "#ABC5FF")
+            // color by value
+            .style("fill",
+                function(d) {
+                    return color(d.value);
+                })
             .attr("r", 20),
 
         // add text to group
@@ -65,14 +85,19 @@ function _addData2Map(map, weatherData)
                 return d.value;
             });
 
-
-
-    // var feature = group.selectAll("circle")
-    //     .data(weatherData)
-    //     .enter().append("circle")
-
+    // update coordinates when map moves
     map.on("viewreset", _update);
     _update();
+
+
+    ///////////////////////////////////////
+    // MAPPING FUNCTIONS
+
+    function _getValueRange(data) {
+        return d3.extent(data, function(d) {
+            return d.value;
+        });
+    }
 
     function _update()
     {
