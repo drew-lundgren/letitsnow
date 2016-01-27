@@ -182,8 +182,8 @@ function _parse(raw)
     lines.forEach(function(line, index, array)
     {
         var match = '';
-        // check for time
-        if (regexs.time.test(line.substr(0, 7)))
+        // check for snow
+        if (line.indexOf('SNOW') === 12)
         {
             // check where next time is
             if (regexs.time.test(array[index + 3]))
